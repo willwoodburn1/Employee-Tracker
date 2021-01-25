@@ -49,16 +49,85 @@ function runSearch() {
 };
 
 function employeeView() {
-    console.log("hello");
+    var query = "SELECT * FROM employee";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+
+        console.table(res)
+
+        runSearch()
+
+    })
 
 }
 
+
 function employeeAdd() {
-    console.log("hey");
+
+    connection.query("SELECT id AS 'value', title AS 'name' FROM roles", function (err, roles) {
+        connection.query("SELECT id AS 'value', title AS 'name' FROM roles", function (err, managers) {
+            const questions = [
+                {
+                    name: "first_name",
+                    type: "input",
+                    message: "What is the employee's first name?"
+
+                },
+                {
+                    name: "last_name",
+                    type: "input",
+                    message: "What is the employee's surname?"
+
+                },
+                {
+                    name: "role_id",
+                    type: "list",
+                    message: "What is the employee's role?",
+                    choices: roles
+                },
+                {
+                    name: "manager_id",
+                    type: "list",
+                    message: "What is the employee's manager's role?",
+                    choices: managers
+                }
+            ]
+
+            inquirer
+                .prompt(questions)
+                .then(function (answers) {
+                    connection.query("INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)", [answers.first_name, answers.last_name, answers.role_id, answers.manager_id], function (err, res) {
+                        if (err) throw err;
+
+                        console.table(res)
+                    })
+
+                }).then(employeeView)
+        });
+
+
+    })
+
 
 }
 
 function employeeUpdate() {
-    console.log("hi");
+    inquirer
+        .prompt({
+            name: "update",
+            type: "input",
+            message: "Which employee would you like to update?"
+        })
+        .then(function (answer) {
+            console.log(answer.update)
+            // connection.query("SELECT(first_name, last_name, role_id, department_id) FROM employee WHERE id=(?)", function (err, res) {
+            connection.query("SELECT * FROM employee WHERE ?", {worker: answer.update}, function (err, data) {
+                if (err) throw err;
+
+                console.table(data);
+            })
+
+            // })
+        })
 
 }
